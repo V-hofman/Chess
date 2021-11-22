@@ -9,15 +9,22 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Objects;
 
 public class Board {
+
     static LinkedList<Pieces> pieces = new LinkedList<>();
     public static Pieces selectedPiece = null;
     static byte turnCount = 1;
+    static byte[] saveFile;
+    static File file;
+
     public static void onCreate() throws IOException {
 
         System.out.println("\nThe board will be printed in the console after each attempted move \nThey will be displayed with a single Char\n" +
@@ -29,6 +36,7 @@ public class Board {
 
         //Here we try to grab the image and cut it up into smaller parts. After which we set the index to link it later.
             BufferedImage pieceSprite = ImageIO.read(new File("./chess.png"));
+            file = new File("./save");
             Image imgs[] = new Image[12];
             int index = 0;
             for(int y = 0; y<400; y+=200){
@@ -126,11 +134,38 @@ public class Board {
                     consoleDisplay();
                     frame.repaint();
                 }
-                if(ke.getKeyCode() == KeyEvent.VK_H) { //Pressing 'h' will toggle the help display
+
+                if(ke.getKeyCode() == KeyEvent.VK_S) { //Pressing 's' will save to file
+                    if(whiteTurn(turnCount))
+                    {
+                        try {
+                            System.out.println("Trying to save");
+                            save(pieces);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            System.out.println("cant save");
+                        }
+                    }
+                }
+
+                if(ke.getKeyCode() == KeyEvent.VK_H) { //Pressing 'H' will toggle help menu
                     startText.setVisible(false);
                     startText.removeAll();
                     helpMenu.setVisible(!helpMenu.isVisible());
 
+                }
+
+                if(ke.getKeyCode() == KeyEvent.VK_L) { //Pressing 'l' will load from file
+                    try {
+                        while(pieces.iterator().hasNext())
+                        {
+                            pieces.remove();
+                        }
+                        pieces = (LinkedList<Pieces>) load();
+                        frame.repaint();
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
 
             }
@@ -451,4 +486,63 @@ public class Board {
         System.out.println("================================= \n ");
     }
 
+    //This will be used to save the objects to a file.
+    public static void save(LinkedList<Pieces> pieces) throws IOException
+    {
+        if(Objects.nonNull(pieces))
+        {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            try (ObjectOutputStream os = new ObjectOutputStream(bos))
+            {
+                os.writeObject(pieces);
+            }
+
+            writeToFile(bos.toByteArray());
+        }else
+        {
+            System.out.println("null");
+        }
+    }
+
+    //In here we will load the file and objects again.
+    public static Object load() throws IOException, ClassNotFoundException
+    {
+        if (file.exists()) {
+            Path path = Paths.get("./save");
+            byte[] data = Files.readAllBytes(path);
+            if (Objects.nonNull(data)) {
+                ByteArrayInputStream bis = new ByteArrayInputStream(data);
+                ObjectInput in = new ObjectInputStream(bis);
+                return in.readObject();
+            }
+
+        }
+            System.out.println("Failed");
+            return null;
+    }
+
+    public static void writeToFile(byte[] saveData)
+    {
+        try {
+
+
+            // Initialize a pointer
+            // in file using OutputStream
+            OutputStream os = new FileOutputStream(file);
+            // Starts writing the bytes in it
+            if(file.exists())
+            {
+                file.delete();
+            }
+            os.write(saveData);
+
+            // Close the file
+            os.close();
+
+        }
+
+        catch (Exception e) {
+            System.out.println("Exception: " + e);
+        }
+    }
 }

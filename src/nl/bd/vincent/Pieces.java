@@ -1,8 +1,9 @@
 package nl.bd.vincent;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
-public abstract class Pieces {
+public abstract class Pieces implements Serializable {
 
     //The variables for the location on the board
     int xLocation, yLocation;
