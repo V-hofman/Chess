@@ -20,11 +20,14 @@ public class Board {
     static byte turnCount = 1;
     public static void onCreate() throws IOException {
 
+        System.out.println("\nThe board will be printed in the console after each attempted move \nThey will be displayed with a single Char\n" +
+                "P = Pawn\nR = Rook\nB = Bishop\nH = Knight/Horse\nQ = Queen\nK = King\n\n");
 
         //Here we define 2 colors that we will use to get the checkered layout.
         Color dark = new Color(184,139,74);
         Color light = new Color(227,193,111);
 
+        //Here we try to grab the image and cut it up into smaller parts. After which we set the index to link it later.
             BufferedImage pieceSprite = ImageIO.read(new File("./chess.png"));
             Image imgs[] = new Image[12];
             int index = 0;
@@ -68,6 +71,7 @@ public class Board {
                     darkSquare = !darkSquare;
                 }
 
+                //Here the actual piece objects are linked to an image, so that we can draw them
                 for(Pieces p: pieces){
                     int indexArray =0;
                     String tempName = p.pieceType.toLowerCase();
@@ -87,13 +91,13 @@ public class Board {
             }
         };
 
-        // The initial text that will pop-up displaying the help menu
+        // The initial text that will pop up displaying the help menu
         JLabel startText;
         startText = createLabel("Press 'H' for help!",128,64,192,192,new Color(100, 120, 250, 200),true,true);
         frame.add(startText);
 
 
-        //The help screen text which wont show at the startup
+        //The help screen text which won't show at the startup
         JLabel helpMenu;
         helpMenu = createLabel("<html>> R: Restart Match<br><br>> H: Toggle This Menu <br><br>> Esc: Exit</html>", 128, 128,
                 192,192, new Color(100,100,100,200), true, true);
@@ -105,13 +109,14 @@ public class Board {
         frame.getContentPane().add(panel);
         frame.pack();
 
-
+        //Adding a Listener that looks for keyboard input
         frame.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent ke) {  // handler
-                if(ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
+
+                if(ke.getKeyCode() == KeyEvent.VK_ESCAPE) { //Pressing escape will get rid of the frame, which in turn closes the application
                     frame.dispose();
                 }
-                if(ke.getKeyCode() == KeyEvent.VK_R){
+                if(ke.getKeyCode() == KeyEvent.VK_R){ //Pressing 'r' will remove and replace the pieces.
                     while(pieces.iterator().hasNext())
                     {
                         pieces.remove();
@@ -121,7 +126,7 @@ public class Board {
                     consoleDisplay();
                     frame.repaint();
                 }
-                if(ke.getKeyCode() == KeyEvent.VK_H) {
+                if(ke.getKeyCode() == KeyEvent.VK_H) { //Pressing 'h' will toggle the help display
                     startText.setVisible(false);
                     startText.removeAll();
                     helpMenu.setVisible(!helpMenu.isVisible());
@@ -131,32 +136,38 @@ public class Board {
             }
         });
 
+        //Added another listener but for mouse movement input
         frame.addMouseMotionListener(new MouseMotionListener() {
 
 
+            //If we have a piece selected and the mouse button held down we need to move the piece.
             @Override
             public void mouseDragged(MouseEvent e) {
                 if(selectedPiece != null)
                 {
+                    //Since 0,0 is the corner of the image we render it with an off-set of 32 which is half the image.
                     selectedPiece.xDrawLoc = e.getX() -32;
                     selectedPiece.yDrawLoc = e.getY() -32;
                     frame.repaint();
                 }
 
             }
-
+            //Not doing anything here, but we need it
             @Override
             public void mouseMoved(MouseEvent e) {
 
             }
         });
 
+        //Now we add a listener for the mouse buttons
         frame.addMouseListener(new MouseListener() {
+            //Not doing anything here, but we need it
             @Override
             public void mouseClicked(MouseEvent e) {
 
             }
 
+            //When we press the button we assign the piece that is located at the mouse cursor
             @Override
             public void mousePressed(MouseEvent e) {
                 try {
@@ -164,22 +175,20 @@ public class Board {
                 }
                 catch (Exception er)
                 {
-                    System.out.println(er);
-                    System.out.println("Geen stuk");
+                    er.printStackTrace();
                 }
-
-
             }
 
+            //When we let go of the mouse button this happens
             @Override
             public void mouseReleased(MouseEvent e) {
-                if(selectedPiece != null)
+                if(selectedPiece != null) //We need to check if there is an actual object selected
                 {
                     int newX = e.getX() / 64;
                     int newY = e.getY() / 64;
-                    if(whiteTurn(turnCount) == selectedPiece.isWhite)
+                    if(whiteTurn(turnCount) == selectedPiece.isWhite) //Check if the colored piece selected has their turn
                     {
-                        if(selectedPiece.pieceType.equals("pawn") )
+                        if(selectedPiece.pieceType.equals("pawn") ) //Pawns require special annoying rules
                         {
                             if(isValidPawnStrike(selectedPiece, newX, newY, Board.getPiece(newX * 64, newY * 64)))
                             {
@@ -198,7 +207,6 @@ public class Board {
                                 returnPlace(selectedPiece);
                             }
                         }
-
                     }else
                     {
                         returnPlace(selectedPiece);
@@ -207,10 +215,11 @@ public class Board {
                     frame.repaint();
                 }
             }
+            //Not doing anything here, but we need it
             @Override
-            public void mouseEntered(MouseEvent e) {
-
+            public void mouseEntered(MouseEvent e) {//Not doing anything here, but we need it
             }
+            //Not doing anything here, but we need it
             @Override
             public void mouseExited(MouseEvent e) {
             }
@@ -256,6 +265,7 @@ public class Board {
 
 
     }
+    //We use this to check if the selected color has the current turn
     public static boolean whiteTurn(byte turnCount)
     {
         return!(turnCount % 2 == 0);
@@ -263,6 +273,7 @@ public class Board {
     }
 
 
+    //Here we make sure we can grab the piece
     public static Pieces getPiece(int x, int y){
         int xp = x/64;
         int yp = y/64;
@@ -276,6 +287,7 @@ public class Board {
         return null;
     }
 
+    //This is used to check the move we want to make is valid
     public static boolean isValidMove(Pieces p, int x, int y)
     {
         switch (p.pieceType)
@@ -311,6 +323,7 @@ public class Board {
         return false;
     }
 
+    //Pawn's have special rules because why not so we seperate part of them
     public static boolean isValidPawnStrike(Pieces p, int x, int y, Pieces killPiece)
     {
         if(killPiece != null)
@@ -326,7 +339,7 @@ public class Board {
 
     }
 
-
+    //Here we actually place the piece at its new location
     public static void placeNew(Pieces p, int x, int y)
     {
         p.xLocation = x;
@@ -335,21 +348,23 @@ public class Board {
         p.yDrawLoc = y * 64;
     }
 
+    //Incase something went wrong this is used to return the piece to where it was selected.
     public static void returnPlace(Pieces p)
     {
         p.xDrawLoc = p.xLocation * 64;
         p.yDrawLoc = p.yLocation * 64;
     }
 
+    //We check if the piece is a king
     public static boolean checkWin(Pieces p)
     {
         return(p.pieceType.equals("king"));
     }
 
+    //In here we actually do the piece removing
     public static void killPiece(Pieces p, int x, int y, Frame frame)
     {
-        System.out.println("kill");
-        if(checkWin(Board.getPiece(x * 64,y * 64)))
+        if(checkWin(Board.getPiece(x * 64,y * 64))) //We need to check if they win
         {
             if(selectedPiece.isWhite)
             {
@@ -365,6 +380,7 @@ public class Board {
         pieces.remove(Board.getPiece(x * 64,y * 64));
     }
 
+    //If the move is valid check for other pieces
     public static void afterValidation(int newX, int newY, Frame frame)
     {
         if(Board.getPiece(newX * 64, newY * 64) != null)
@@ -387,6 +403,7 @@ public class Board {
         }
     }
 
+    //A base for creating a nice label
     public static JLabel createLabel(String text, int width, int height, int xPos, int yPos, Color background, boolean border, boolean Opaque)
     {
         JLabel tempLabel = new JLabel();
@@ -403,6 +420,7 @@ public class Board {
         return  tempLabel;
     }
 
+    //Here we print the current board to console
     public static void consoleDisplay()
     {
         for(int i = 0; i < 8; i++)
@@ -411,26 +429,24 @@ public class Board {
             {
                 if(j == 0)
                 {
-                    System.out.printf("| ");
+                    System.out.print("| ");
                 }
                 if(getPiece(j * 64,i * 64) == null)
                 {
-                    System.out.printf(" ");
+                    System.out.print(" ");
                 }else
                 {
-                    if(getPiece(j * 64,i * 64).pieceType == "knight")
+                    if(getPiece(j * 64,i * 64).pieceType.equals("knight"))
                     {
-                        System.out.printf("H");
+                        System.out.print("H");
                     }else
                     {
-                        System.out.printf(String.valueOf(getPiece(j * 64,i * 64).pieceType.charAt(0)).toUpperCase(Locale.ROOT));
+                        System.out.print(String.valueOf(getPiece(j * 64,i * 64).pieceType.charAt(0)).toUpperCase(Locale.ROOT));
                     }
-
                 }
-
-                System.out.printf(" | ");
+                System.out.print(" | ");
             }
-            System.out.printf("\n");
+            System.out.print("\n");
         }
         System.out.println("================================= \n ");
     }
