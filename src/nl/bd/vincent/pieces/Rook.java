@@ -1,19 +1,19 @@
-package nl.bd.pieces;
+package nl.bd.vincent.pieces;
 
-import nl.bd.Pieces;
+import nl.bd.vincent.Pieces;
 
 import java.util.LinkedList;
 
-public class Bishop extends Pieces {
+public class Rook extends Pieces {
 
     //The variables for the location on the board
     int xLocation, yLocation;
     int xDrawLoc, yDrawLoc;
     boolean isWhite;
     LinkedList<Pieces> pieces;
-    String pieceType = "Bishop";
+    String pieceType = "Rook";
 
-    public Bishop(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces){
+    public Rook(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces){
         super(xLocation, yLocation, isWhite, pieceType, pieces);
         this.xLocation = xLocation;
         this.yLocation = yLocation;

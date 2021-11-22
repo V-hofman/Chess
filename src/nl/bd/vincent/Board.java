@@ -1,18 +1,18 @@
-package nl.bd;
+package nl.bd.vincent;
 
 
-import nl.bd.pieces.*;
+import nl.bd.vincent.pieces.*;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import javax.imageio.ImageIO;
-import javax.swing.border.LineBorder;
+import java.util.Locale;
 
 public class Board {
     static LinkedList<Pieces> pieces = new LinkedList<>();
@@ -118,6 +118,7 @@ public class Board {
                     }
                     addPieces();
                     turnCount = 1;
+                    consoleDisplay();
                     frame.repaint();
                 }
                 if(ke.getKeyCode() == KeyEvent.VK_H) {
@@ -202,6 +203,7 @@ public class Board {
                     {
                         returnPlace(selectedPiece);
                     }
+                    consoleDisplay();
                     frame.repaint();
                 }
             }
@@ -327,7 +329,6 @@ public class Board {
 
     public static void placeNew(Pieces p, int x, int y)
     {
-        System.out.println("move");
         p.xLocation = x;
         p.yLocation = y;
         p.xDrawLoc = x * 64;
@@ -336,7 +337,6 @@ public class Board {
 
     public static void returnPlace(Pieces p)
     {
-        System.out.println("return");
         p.xDrawLoc = p.xLocation * 64;
         p.yDrawLoc = p.yLocation * 64;
     }
@@ -401,6 +401,38 @@ public class Board {
             tempLabel.setBorder(new LineBorder(Color.BLACK));
         }
         return  tempLabel;
+    }
+
+    public static void consoleDisplay()
+    {
+        for(int i = 0; i < 8; i++)
+        {
+            for(int j = 0; j < 8; j++)
+            {
+                if(j == 0)
+                {
+                    System.out.printf("| ");
+                }
+                if(getPiece(j * 64,i * 64) == null)
+                {
+                    System.out.printf(" ");
+                }else
+                {
+                    if(getPiece(j * 64,i * 64).pieceType == "knight")
+                    {
+                        System.out.printf("H");
+                    }else
+                    {
+                        System.out.printf(String.valueOf(getPiece(j * 64,i * 64).pieceType.charAt(0)).toUpperCase(Locale.ROOT));
+                    }
+
+                }
+
+                System.out.printf(" | ");
+            }
+            System.out.printf("\n");
+        }
+        System.out.println("================================= \n ");
     }
 
 }

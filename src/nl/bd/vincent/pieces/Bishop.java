@@ -1,29 +1,27 @@
-package nl.bd;
+package nl.bd.vincent.pieces;
+
+import nl.bd.vincent.Pieces;
 
 import java.util.LinkedList;
 
-public abstract class Pieces {
+public class Bishop extends Pieces {
 
     //The variables for the location on the board
     int xLocation, yLocation;
     int xDrawLoc, yDrawLoc;
     boolean isWhite;
     LinkedList<Pieces> pieces;
-    String pieceType = "";
+    String pieceType = "Bishop";
 
-    public Pieces(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces){
+    public Bishop(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces){
+        super(xLocation, yLocation, isWhite, pieceType, pieces);
         this.xLocation = xLocation;
         this.yLocation = yLocation;
-        this.xDrawLoc = xLocation * 64;
-        this.yDrawLoc = yLocation * 64;
+        xDrawLoc = xLocation * 64;
+        yDrawLoc = yLocation * 64;
         this.isWhite = isWhite;
         this.pieces = pieces;
         this.pieceType = pieceType;
         pieces.add(this);
-    }
-
-    public void KillPiece()
-    {
-        pieces.remove(this);
     }
 }

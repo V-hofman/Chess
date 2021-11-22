@@ -1,4 +1,4 @@
-package nl.bd;
+package nl.bd.vincent;
 
 
 import java.io.IOException;
@@ -7,6 +7,7 @@ public class Main {
 
     public static void main(String[] args) {
 
+
         Board board = new Board();
 
         try {
@@ -14,7 +15,5 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 }
