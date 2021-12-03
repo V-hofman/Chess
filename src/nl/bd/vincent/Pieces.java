@@ -23,8 +23,16 @@ public abstract class Pieces implements Serializable {
         pieces.add(this);
     }
 
+    public abstract boolean move(int x, int y);
+
     public void KillPiece()
     {
         pieces.remove(this);
     }
+
+    public String getPieceType()
+    {
+        return this.pieceType;
+    }
 }
+

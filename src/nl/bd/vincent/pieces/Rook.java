@@ -24,4 +24,13 @@ public class Rook extends Pieces {
         this.pieceType = pieceType;
         pieces.add(this);
     }
+    public boolean move(int x, int y) {
+        if(x == this.xLocation || y == this.yLocation)
+        {
+            this.xLocation = x;
+            this.yLocation = y;
+            return true;
+        }
+        return false;
+    }
 }

@@ -24,4 +24,15 @@ public class King extends Pieces {
         this.pieceType = pieceType;
         pieces.add(this);
     }
+    public boolean move(int x, int y)
+    {
+        System.out.println("king");
+        if (x == this.xLocation + 1 || x == this.xLocation - 1 || y == this.yLocation - 1 || y == this.yLocation + 1 )
+        {
+            this.xLocation = x;
+            this.yLocation = y;
+            return true;
+        }
+        return false;
+    }
 }

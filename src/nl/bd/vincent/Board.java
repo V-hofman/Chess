@@ -223,27 +223,21 @@ public class Board {
                     int newY = e.getY() / 64;
                     if(whiteTurn(turnCount) == selectedPiece.isWhite) //Check if the colored piece selected has their turn
                     {
-                        if(selectedPiece.pieceType.equals("pawn") ) //Pawns require special annoying rules
+                        System.out.println(newX + " " + newY);
+                        if(selectedPiece.move(newX, newY))
                         {
-                            if(isValidPawnStrike(selectedPiece, newX, newY, Board.getPiece(newX * 64, newY * 64)))
-                            {
-                                afterValidation( newX, newY, frame);
-                            }else
-                            {
-                                returnPlace(selectedPiece);
-                            }
+                            System.out.println("moving to: " + newX + " " + newY);
+                            afterValidation(newX, newY, frame);
+                            System.out.println(selectedPiece.xLocation + " " + selectedPiece.yLocation);
                         }else
                         {
-                            if(isValidMove(selectedPiece, newX, newY))
-                            {
-                                afterValidation(newX, newY, frame);
-                            }else
-                            {
-                                returnPlace(selectedPiece);
-                            }
+                            System.out.println("return");
+                            returnPlace(selectedPiece);
                         }
+
                     }else
                     {
+                        System.out.println("Not your turn");
                         returnPlace(selectedPiece);
                     }
                     consoleDisplay();
@@ -270,32 +264,32 @@ public class Board {
     public static void addPieces()
     {
         //While it says they aren't used they are. They are just added to a linked list upon creation
-        Pieces wKing = new King(4,0,false,"king", pieces);
-        Pieces bKing = new King(4,7,true,"king", pieces);
-        Pieces wQueen = new Queen(3,0,false,"queen", pieces);
-        Pieces bQueen = new Queen(3,7,true,"queen", pieces);
+        King wKing = new King(4,0,false,"king", pieces);
+        King bKing = new King(4,7,true,"king", pieces);
+        Queen wQueen = new Queen(3,0,false,"queen", pieces);
+        Queen bQueen = new Queen(3,7,true,"queen", pieces);
 
-        Pieces wRook1 = new Rook(0,0,false,"rook", pieces);
-        Pieces wRook2 = new Rook(7,0,false,"rook", pieces);
+        Rook wRook1 = new Rook(0,0,false,"rook", pieces);
+        Rook wRook2 = new Rook(7,0,false,"rook", pieces);
 
-        Pieces bRook1 = new Rook(0,7,true,"rook", pieces);
-        Pieces bRook2 = new Rook(7,7,true,"rook", pieces);
+        Rook bRook1 = new Rook(0,7,true,"rook", pieces);
+        Rook bRook2 = new Rook(7,7,true,"rook", pieces);
 
-        Pieces wBishop1 = new Bishop(2,0,false,"bishop", pieces);
-        Pieces wBishop2 = new Bishop(5,0,false,"bishop", pieces);
+        Bishop wBishop1 = new Bishop(2,0,false,"bishop", pieces);
+        Bishop wBishop2 = new Bishop(5,0,false,"bishop", pieces);
 
-        Pieces bBishop1 = new Bishop(2,7,true,"bishop", pieces);
-        Pieces bBishop2 = new Bishop(5,7,true,"bishop", pieces);
+        Bishop bBishop1 = new Bishop(2,7,true,"bishop", pieces);
+        Bishop bBishop2 = new Bishop(5,7,true,"bishop", pieces);
 
-        Pieces wKnight1 = new Knight(1,0,false,"knight", pieces);
-        Pieces wKnight2 = new Knight(6,0,false,"knight", pieces);
+        Knight wKnight1 = new Knight(1,0,false,"knight", pieces);
+        Knight wKnight2 = new Knight(6,0,false,"knight", pieces);
 
-        Pieces bKnight1 = new Knight(1,7,true,"knight", pieces);
-        Pieces bKnight2 = new Knight(6,7,true,"knight", pieces);
+        Knight bKnight1 = new Knight(1,7,true,"knight", pieces);
+        Knight bKnight2 = new Knight(6,7,true,"knight", pieces);
 
         for(int i = 0;i < 8; i++ ){
-            Pieces wPawn = new Pawn(i, 1, false, "pawn", pieces);
-            Pieces bPawn = new Pawn(i, 6, true, "pawn", pieces);
+            Pawn wPawn = new Pawn(i, 1, false, "pawn", pieces);
+            Pawn bPawn = new Pawn(i, 6, true, "pawn", pieces);
         }
 
 
@@ -321,62 +315,11 @@ public class Board {
         }
         return null;
     }
-
-    //This is used to check the move we want to make is valid
-    public static boolean isValidMove(Pieces p, int x, int y)
-    {
-        switch (p.pieceType)
-        {
-            case "king":
-                return (x == p.xLocation + 1 || x == p.xLocation - 1 || y == p.yLocation - 1 || y == p.yLocation + 1 );
-
-            case "pawn":
-                if(Board.getPiece(x,y) != null)
-                {
-                    return (isValidPawnStrike(p, x, y, Board.getPiece(x,y)));
-                }else
-                {
-                    return ((((!p.isWhite && y == p.yLocation + 1) || (p.isWhite && y == p.yLocation - 1)) && x == p.xLocation) ||
-                            p.yLocation == 1 && (!p.isWhite && y == p.yLocation + 2) || p.yLocation == 6 && (p.isWhite && y == p.yLocation - 2));
-                }
-
-            case "queen":
-                return((x - p.xLocation == p.yLocation - y || x - p.xLocation == -(p.yLocation - y)) || x == p.xLocation || y == p.yLocation);
-
-            case "bishop":
-                return(x - p.xLocation == p.yLocation - y || x - p.xLocation == -(p.yLocation - y));
-            case "rook":
-                return (x == p.xLocation || y == p.yLocation);
-
-            case "knight":
-                return ((x - p.xLocation == -1 && y - p.yLocation == -2) || (x - p.xLocation == 1 && y - p.yLocation == -2) ||
-                        (x - p.xLocation == 1 && y - p.yLocation == 2) || (x - p.xLocation == -1 && y - p.yLocation == 2) ||
-                        (x - p.xLocation == 2 && y - p.yLocation == 1) || (x - p.xLocation == 2 && y - p.yLocation == -1) ||
-                        (x - p.xLocation == -2 && y - p.yLocation == 1) || (x - p.xLocation == -2 && y - p.yLocation == -1));
-
-        }
-        return false;
-    }
-
-    //Pawn's have special rules because why not so we seperate part of them
-    public static boolean isValidPawnStrike(Pieces p, int x, int y, Pieces killPiece)
-    {
-        if(killPiece != null)
-        {
-            return((((!p.isWhite && y == p.yLocation + 1) || (p.isWhite && y == p.yLocation - 1)) && (x == p.xLocation + 1 || x == p.xLocation - 1 )) ||
-                    p.yLocation == 1 && (!p.isWhite && y == p.yLocation + 2) || p.yLocation == 6 && (p.isWhite && y == p.yLocation - 2));
-
-        }else
-        {
-            return((((!p.isWhite && y == p.yLocation + 1) || (p.isWhite && y == p.yLocation - 1)) && x == p.xLocation) ||
-                    p.yLocation == 1 && (!p.isWhite && y == p.yLocation + 2) || p.yLocation == 6 && (p.isWhite && y == p.yLocation - 2));
-        }
-
-    }
-
+    
     //Here we actually place the piece at its new location
     public static void placeNew(Pieces p, int x, int y)
     {
+        System.out.println("Place at new location");
         p.xLocation = x;
         p.yLocation = y;
         p.xDrawLoc = x * 64;
@@ -418,6 +361,7 @@ public class Board {
     //If the move is valid check for other pieces
     public static void afterValidation(int newX, int newY, Frame frame)
     {
+        System.out.println("validation passed");
         if(Board.getPiece(newX * 64, newY * 64) != null)
         {
             if(Board.getPiece(newX * 64,newY * 64 ).isWhite==selectedPiece.isWhite){
@@ -458,6 +402,7 @@ public class Board {
     //Here we print the current board to console
     public static void consoleDisplay()
     {
+        System.out.println("Round number: " + turnCount);
         for(int i = 0; i < 8; i++)
         {
             for(int j = 0; j < 8; j++)
