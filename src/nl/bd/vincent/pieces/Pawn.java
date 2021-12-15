@@ -30,7 +30,6 @@ public class Pawn extends Pieces {
     {
         if(Board.getPiece(x * 64,y * 64) != null)
         {
-            System.out.println(Board.getPiece(x * 64,y * 64).getPieceType());
             if(pawnStrike( x, y, Board.getPiece(x * 64,y * 64)))
             {
                 this.xLocation = x;
@@ -54,11 +53,8 @@ public class Pawn extends Pieces {
 
     public boolean pawnStrike(int x, int y, Pieces killPiece)
     {
-        System.out.println("check strike");
         if(killPiece != null)
         {
-
-            System.out.println("x: " + x + " Y:" +  y);
             return((((!this.isWhite && y == this.yLocation + 1) || (this.isWhite && y == this.yLocation - 1)) && (x == this.xLocation + 1 || x == this.xLocation - 1 )) ||
                     this.yLocation == 1 && (!this.isWhite && y == this.yLocation + 2) || this.yLocation == 6 && (this.isWhite && y == this.yLocation - 2));
 

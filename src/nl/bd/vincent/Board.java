@@ -9,39 +9,67 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.LinkedList;
 import java.util.Locale;
-import java.util.Objects;
 
 public class Board {
 
     static LinkedList<Pieces> pieces = new LinkedList<>();
     public static Pieces selectedPiece = null;
     static byte turnCount = 1;
-    static byte[] saveFile;
     static File file;
+    static FileHandler handler;
 
     public static void onCreate() throws IOException {
 
-        System.out.println("\nThe board will be printed in the console after each attempted move \nThey will be displayed with a single Char\n" +
-                "P = Pawn\nR = Rook\nB = Bishop\nH = Knight/Horse\nQ = Queen\nK = King\n\n");
+        System.out.println("""
+
+                The board will be printed in the console after each attempted move\s
+                They will be displayed with a single Char
+                P = Pawn
+                R = Rook
+                B = Bishop
+                H = Knight/Horse
+                Q = Queen
+                K = King
+
+                """);
 
         //Here we define 2 colors that we will use to get the checkered layout.
         Color dark = new Color(184,139,74);
         Color light = new Color(227,193,111);
 
         //Here we try to grab the image and cut it up into smaller parts. After which we set the index to link it later.
-            BufferedImage pieceSprite = ImageIO.read(new File("./chess.png"));
+        BufferedImage pieceSprite = null;
+        try{
+            pieceSprite = ImageIO.read(new File("./chess.png"));
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            System.out.println("Image file is missing!");
+            JOptionPane.showMessageDialog(null,  "Image file is missing!","ERROR", JOptionPane.INFORMATION_MESSAGE);
+            System.exit(0);
+        }
+
             file = new File("./save");
-            Image imgs[] = new Image[12];
+            handler = new FileHandler("./save");
+            Image[] imgs = new Image[12];
             int index = 0;
             for(int y = 0; y<400; y+=200){
                 for(int x=0;x<1200;x+=200){
-                    imgs[index]= pieceSprite.getSubimage(x, y, 200, 200).getScaledInstance(64, 64, BufferedImage.SCALE_SMOOTH);
+                    try{
+                        imgs[index]= pieceSprite.getSubimage(x, y, 200, 200).getScaledInstance(64, 64, BufferedImage.SCALE_SMOOTH);
+                    }catch (Exception e)
+                    {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(null,  "Image file is corrupt!","ERROR", JOptionPane.INFORMATION_MESSAGE);
+                        System.exit(0);
+                    }
+
                     index++;
                 }
             }
@@ -107,7 +135,7 @@ public class Board {
 
         //The help screen text which won't show at the startup
         JLabel helpMenu;
-        helpMenu = createLabel("<html>> R: Restart Match<br><br>> H: Toggle This Menu <br><br>> Esc: Exit</html>", 128, 128,
+        helpMenu = createLabel("<html>> S: Save Match<br>> L: Load Save<br><br>> R: Restart Match<br>> H: Toggle This Menu <br><br>> Esc: Exit</html>", 128, 128,
                 192,192, new Color(100,100,100,200), true, true);
         helpMenu.setVisible(false);
         frame.add(helpMenu);
@@ -138,12 +166,11 @@ public class Board {
                 if(ke.getKeyCode() == KeyEvent.VK_S) { //Pressing 's' will save to file
                     if(whiteTurn(turnCount))
                     {
+                        String passString = getLayoutString();
                         try {
-                            System.out.println("Trying to save");
-                            save(pieces);
+                            handler.saveToFile(passString);
                         } catch (IOException e) {
                             e.printStackTrace();
-                            System.out.println("cant save");
                         }
                     }
                 }
@@ -156,18 +183,30 @@ public class Board {
                 }
 
                 if(ke.getKeyCode() == KeyEvent.VK_L) { //Pressing 'l' will load from file
-                    try {
+                    if(file.exists())
+                    {
                         while(pieces.iterator().hasNext())
                         {
                             pieces.remove();
                         }
-                        pieces = (LinkedList<Pieces>) load();
-                        frame.repaint();
-                    } catch (IOException | ClassNotFoundException e) {
-                        e.printStackTrace();
+                        try {
+                            String passString = handler.loadFile();
+                            orderBoard(passString);
+                            frame.repaint();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            JOptionPane.showMessageDialog(null,  "Save file corrupted!","ERROR", JOptionPane.INFORMATION_MESSAGE);
+                            addPieces();
+                            turnCount = 1;
+                            consoleDisplay();
+                            frame.repaint();
+
+                        }
+                    }else
+                    {
+                        JOptionPane.showMessageDialog(null,  "Save file corrupted!","ERROR", JOptionPane.INFORMATION_MESSAGE);
                     }
                 }
-
             }
         });
 
@@ -223,15 +262,11 @@ public class Board {
                     int newY = e.getY() / 64;
                     if(whiteTurn(turnCount) == selectedPiece.isWhite) //Check if the colored piece selected has their turn
                     {
-                        System.out.println(newX + " " + newY);
                         if(selectedPiece.move(newX, newY))
                         {
-                            System.out.println("moving to: " + newX + " " + newY);
                             afterValidation(newX, newY, frame);
-                            System.out.println(selectedPiece.xLocation + " " + selectedPiece.yLocation);
                         }else
                         {
-                            System.out.println("return");
                             returnPlace(selectedPiece);
                         }
 
@@ -255,7 +290,7 @@ public class Board {
         });
 
         //This sets it so the program closes when the frame is closed
-        frame.setDefaultCloseOperation(3);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         //We need to see the frame
         frame.setVisible(true);
 
@@ -315,11 +350,10 @@ public class Board {
         }
         return null;
     }
-    
+
     //Here we actually place the piece at its new location
     public static void placeNew(Pieces p, int x, int y)
     {
-        System.out.println("Place at new location");
         p.xLocation = x;
         p.yLocation = y;
         p.xDrawLoc = x * 64;
@@ -333,35 +367,31 @@ public class Board {
         p.yDrawLoc = p.yLocation * 64;
     }
 
-    //We check if the piece is a king
-    public static boolean checkWin(Pieces p)
-    {
-        return(p.pieceType.equals("king"));
-    }
-
     //In here we actually do the piece removing
-    public static void killPiece(Pieces p, int x, int y, Frame frame)
+    public static void killPiece( int x, int y, Frame frame)
     {
-        if(checkWin(Board.getPiece(x * 64,y * 64))) //We need to check if they win
+        if(Board.getPiece(x * 64,y * 64) != null)
         {
-            if(selectedPiece.isWhite)
+            if(Board.getPiece(x * 64,y * 64).getPieceType().equals("king")) //We need to check if they win
             {
-                JOptionPane.showMessageDialog(null,  "WHITE HAS WON!","GAME ENDED", JOptionPane.INFORMATION_MESSAGE);
-            }else
-            {
-                JOptionPane.showMessageDialog(null, "BLACK HAS WON!","GAME ENDED", JOptionPane.INFORMATION_MESSAGE);
+                if(selectedPiece.isWhite)
+                {
+                    JOptionPane.showMessageDialog(null,  "WHITE HAS WON!","GAME ENDED", JOptionPane.INFORMATION_MESSAGE);
+                }else
+                {
+                    JOptionPane.showMessageDialog(null, "BLACK HAS WON!","GAME ENDED", JOptionPane.INFORMATION_MESSAGE);
+                }
+                frame.dispose();
             }
-            frame.dispose();
-
+            Board.getPiece(x * 64,y * 64 ).KillPiece();
+            pieces.remove(Board.getPiece(x * 64,y * 64));
         }
-        Board.getPiece(x * 64,y * 64 ).KillPiece();
-        pieces.remove(Board.getPiece(x * 64,y * 64));
+
     }
 
     //If the move is valid check for other pieces
     public static void afterValidation(int newX, int newY, Frame frame)
     {
-        System.out.println("validation passed");
         if(Board.getPiece(newX * 64, newY * 64) != null)
         {
             if(Board.getPiece(newX * 64,newY * 64 ).isWhite==selectedPiece.isWhite){
@@ -369,7 +399,7 @@ public class Board {
             }else
             {
                 if(Board.getPiece(newX * 64,newY * 64 ).isWhite!=selectedPiece.isWhite){
-                        killPiece(selectedPiece, newX, newY, frame);
+                        killPiece(newX, newY, frame);
                         placeNew(selectedPiece, newX, newY);
                 }
                 turnCount++;
@@ -431,63 +461,110 @@ public class Board {
         System.out.println("================================= \n ");
     }
 
-    //This will be used to save the objects to a file.
-    public static void save(LinkedList<Pieces> pieces) throws IOException
+    public static String getLayoutString()
     {
-        if(Objects.nonNull(pieces))
-        {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            try (ObjectOutputStream os = new ObjectOutputStream(bos))
-            {
-                os.writeObject(pieces);
-            }
+        char tempChar;
+        StringBuilder tempString = new StringBuilder();
 
-            writeToFile(bos.toByteArray());
+        for(int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                try {
+                    selectedPiece = getPiece(x * 64, y * 64);
+                    if(selectedPiece.getPieceType().equals("knight"))
+                    {
+                        tempChar = 'h';
+                    }else
+                    {
+                        tempChar = selectedPiece.getPieceType().charAt(0);
+                    }
+                    if(selectedPiece.isWhite)
+                    {
+                       tempChar = Character.toLowerCase(tempChar);
+                    }else
+                    {
+                        tempChar = Character.toUpperCase(tempChar);
+                    }
+                }
+                catch (Exception er)
+                {
+                    tempChar = 'x';
+                }
+
+                tempString.append(tempChar);
+            }
+        }
+        Base64.Encoder encoder = Base64.getEncoder();
+        return encoder.encodeToString(tempString.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static void orderBoard(String loadString)
+    {
+        int yPlace = 0;
+        if(loadString.length() % 8 != 0)
+        {
+            System.out.println("Corrupted save file!");
         }else
         {
-            System.out.println("null");
-        }
-    }
-
-    //In here we will load the file and objects again.
-    public static Object load() throws IOException, ClassNotFoundException
-    {
-        if (file.exists()) {
-            Path path = Paths.get("./save");
-            byte[] data = Files.readAllBytes(path);
-            if (Objects.nonNull(data)) {
-                ByteArrayInputStream bis = new ByteArrayInputStream(data);
-                ObjectInput in = new ObjectInputStream(bis);
-                return in.readObject();
-            }
-
-        }
-            System.out.println("Failed");
-            return null;
-    }
-
-    public static void writeToFile(byte[] saveData)
-    {
-        try {
-
-
-            // Initialize a pointer
-            // in file using OutputStream
-            OutputStream os = new FileOutputStream(file);
-            // Starts writing the bytes in it
-            if(file.exists())
+            for(int i = 0; i < loadString.length(); i++)
             {
-                file.delete();
+                if(i % 8 == 0 && i != 0)
+                {
+
+                    yPlace++;
+                }
+                if(loadString.charAt(i) != 'x')
+                {
+
+                    switch (loadString.charAt(i)) {
+                        case 'K':
+                            King wKing = new King(i % 8,yPlace,false,"king", pieces);
+                            break;
+                        case 'Q':
+                            Queen wQueen = new Queen(i % 8,yPlace,false,"queen", pieces);
+                            break;
+                        case 'B':
+                            Bishop wBishop = new Bishop(i % 8,yPlace,false,"bishop", pieces);
+                            break;
+                        case 'H':
+                            Knight wKnight = new Knight(i % 8,yPlace,false,"knight", pieces);
+                            break;
+                        case 'R':
+                            Rook wRook = new Rook(i % 8,yPlace,false,"rook", pieces);
+                            break;
+                        case 'P':
+                            Pawn wPawn = new Pawn(i % 8,yPlace, false, "pawn", pieces);
+                            break;
+                        case 'k':
+                            King bKing = new King(i % 8,yPlace,true,"king", pieces);
+                            break;
+                        case 'q':
+                            Queen bQueen = new Queen(i % 8,yPlace,true,"queen", pieces);
+                            break;
+                        case 'b':
+                            Bishop bBishop = new Bishop(i % 8,yPlace,true,"bishop", pieces);
+                            break;
+                        case 'h':
+                            Knight bKnight = new Knight(i % 8,yPlace,true,"knight", pieces);
+                            break;
+                        case 'r':
+                            Rook bRook = new Rook(i % 8,yPlace,true,"rook", pieces);
+                            break;
+                        case 'p':
+                            Pawn bPawn = new Pawn(i % 8,yPlace, true, "pawn", pieces);
+                            break;
+                        case 'x':
+                            break;
+                        default:
+                            System.out.println("Corrupted file!");
+                            break;
+                    }
+
+                }
+
             }
-            os.write(saveData);
-
-            // Close the file
-            os.close();
-
-        }
-
-        catch (Exception e) {
-            System.out.println("Exception: " + e);
         }
     }
+
 }
