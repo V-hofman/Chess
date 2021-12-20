@@ -4,7 +4,8 @@ import nl.bd.vincent.Pieces;
 
 import java.util.LinkedList;
 
-public class Queen extends Pieces {
+public class Queen extends Pieces
+{
 
     //The variables for the location on the board
     int xLocation, yLocation;
@@ -13,7 +14,8 @@ public class Queen extends Pieces {
     LinkedList<Pieces> pieces;
     String pieceType = "Queen";
 
-    public Queen(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces){
+    public Queen(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces)
+    {
         super(xLocation, yLocation, isWhite, pieceType, pieces);
         this.xLocation = xLocation;
         this.yLocation = yLocation;
@@ -24,8 +26,10 @@ public class Queen extends Pieces {
         this.pieceType = pieceType;
         pieces.add(this);
     }
-    public boolean move(int x, int y) {
-        if((x - this.xLocation == this.yLocation - y || x - this.xLocation == -(this.yLocation - y)) || x == this.xLocation || y == this.yLocation)
+
+    public boolean move(int x, int y)
+    {
+        if ((x - this.xLocation == this.yLocation - y || x - this.xLocation == -(this.yLocation - y)) || x == this.xLocation || y == this.yLocation)
         {
             this.xLocation = x;
             this.yLocation = y;

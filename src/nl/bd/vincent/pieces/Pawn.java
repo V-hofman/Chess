@@ -5,7 +5,8 @@ import nl.bd.vincent.Pieces;
 
 import java.util.LinkedList;
 
-public class Pawn extends Pieces {
+public class Pawn extends Pieces
+{
 
     //The variables for the location on the board
     int xLocation, yLocation;
@@ -14,7 +15,8 @@ public class Pawn extends Pieces {
     LinkedList<Pieces> pieces;
     String pieceType = "Pawn";
 
-    public Pawn(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces){
+    public Pawn(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces)
+    {
         super(xLocation, yLocation, isWhite, pieceType, pieces);
         this.xLocation = xLocation;
         this.yLocation = yLocation;
@@ -28,19 +30,19 @@ public class Pawn extends Pieces {
 
     public boolean move(int x, int y)
     {
-        if(Board.getPiece(x * 64,y * 64) != null)
+        if (Board.getPiece(x * 64, y * 64) != null)
         {
-            if(pawnStrike( x, y, Board.getPiece(x * 64,y * 64)))
+            if (pawnStrike(x, y, Board.getPiece(x * 64, y * 64)))
             {
                 this.xLocation = x;
                 this.yLocation = y;
                 return true;
             }
 
-        }else
+        } else
         {
 
-            if((((!this.isWhite && y == this.yLocation + 1) || (this.isWhite && y == this.yLocation - 1)) && x == this.xLocation) ||
+            if ((((!this.isWhite && y == this.yLocation + 1) || (this.isWhite && y == this.yLocation - 1)) && x == this.xLocation) ||
                     this.yLocation == 1 && (!this.isWhite && y == this.yLocation + 2) || this.yLocation == 6 && (this.isWhite && y == this.yLocation - 2))
             {
                 this.xLocation = x;
@@ -53,14 +55,14 @@ public class Pawn extends Pieces {
 
     public boolean pawnStrike(int x, int y, Pieces killPiece)
     {
-        if(killPiece != null)
+        if (killPiece != null)
         {
-            return((((!this.isWhite && y == this.yLocation + 1) || (this.isWhite && y == this.yLocation - 1)) && (x == this.xLocation + 1 || x == this.xLocation - 1 )) ||
+            return ((((!this.isWhite && y == this.yLocation + 1) || (this.isWhite && y == this.yLocation - 1)) && (x == this.xLocation + 1 || x == this.xLocation - 1)) ||
                     this.yLocation == 1 && (!this.isWhite && y == this.yLocation + 2) || this.yLocation == 6 && (this.isWhite && y == this.yLocation - 2));
 
-        }else
+        } else
         {
-            return((((!this.isWhite && y == this.yLocation + 1) || (this.isWhite && y == this.yLocation - 1)) && x == this.xLocation) ||
+            return ((((!this.isWhite && y == this.yLocation + 1) || (this.isWhite && y == this.yLocation - 1)) && x == this.xLocation) ||
                     this.yLocation == 1 && (!this.isWhite && y == this.yLocation + 2) || this.yLocation == 6 && (this.isWhite && y == this.yLocation - 2));
         }
 

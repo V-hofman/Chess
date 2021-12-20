@@ -3,16 +3,17 @@ package nl.bd.vincent;
 
 import java.io.IOException;
 
-public class Main {
+public class Main
+{
 
-    public static void main(String[] args) {
-
-
+    public static void main(String[] args)
+    {
         Board board = new Board();
-
-        try {
+        try
+        {
             Board.onCreate();
-        } catch (IOException e) {
+        } catch (IOException e)
+        {
             e.printStackTrace();
         }
     }
