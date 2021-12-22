@@ -12,7 +12,7 @@ public class Queen extends Pieces
     int xDrawLoc, yDrawLoc;
     boolean isWhite;
     LinkedList<Pieces> pieces;
-    String pieceType = "Queen";
+    String pieceType;
 
     public Queen(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces)
     {

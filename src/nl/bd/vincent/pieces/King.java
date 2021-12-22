@@ -11,7 +11,7 @@ public class King extends Pieces {
     int xDrawLoc, yDrawLoc;
     boolean isWhite;
     LinkedList<Pieces> pieces;
-    String pieceType = "King";
+    String pieceType;
 
     public King(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces){
         super(xLocation, yLocation, isWhite, pieceType, pieces);

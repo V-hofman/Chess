@@ -10,7 +10,7 @@ public abstract class Pieces implements Serializable {
     int xDrawLoc, yDrawLoc;
     boolean isWhite;
     LinkedList<Pieces> pieces;
-    String pieceType = "";
+    String pieceType;
 
     public Pieces(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces){
         this.xLocation = xLocation;

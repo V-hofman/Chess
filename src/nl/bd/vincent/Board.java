@@ -24,8 +24,9 @@ public class Board
     static LinkedList<Pieces> pieces = new LinkedList<>();
     public static Pieces selectedPiece = null;
     static byte turnCount = 1;
-    static File file;
+
     static FileHandler handler;
+    static PawnHandler pHandler;
 
     //Instead of using a constructor I decided to throw it in a function if it needs to ever be called again.
     public static void onCreate() throws IOException
@@ -52,8 +53,8 @@ public class Board
          **/
 
 
-        String filePath = "./";
-        while (filePath.equals("./"))
+        String filePath = "./saves/";
+        while (filePath.equals("./saves/"))
         {
             //This regex string is used to validate the input in the pop-up
             String regex = "[a-z A-Z]{3,10}";
@@ -61,16 +62,17 @@ public class Board
             String userInput = nameInput();
             Matcher m = p.matcher(userInput);
 
-            //It has to match the input or we shall loop again
+            //It has to match the input, or we shall loop again
             if (m.matches())
             {
-                filePath = "./" + userInput;
+                filePath = "./saves/" + userInput;
             }
         }
 
         //Create the file and the handler object we use
-        //file = new File(filePath);
         handler = new FileHandler(filePath);
+        pHandler = new PawnHandler();
+
 
         /**
          ** ==================
@@ -114,7 +116,7 @@ public class Board
             }
         }
         //Now that we have the image cut we start creating the pieces.
-        addPieces();
+        pHandler.addPieces(pieces);
 
         //Here we create the frame which holds everything
         JFrame frame = new JFrame();
@@ -162,7 +164,7 @@ public class Board
                         //Switching colors is important
                         darkSquare = !darkSquare;
                     }
-                    //Gotta make sure to switch when we go to the next layer as well
+                    //got to make sure to switch when we go to the next layer as well
                     darkSquare = !darkSquare;
                 }
 
@@ -229,6 +231,7 @@ public class Board
                 if (ke.getKeyCode() == KeyEvent.VK_ESCAPE)
                 { //Pressing escape will get rid of the frame, which in turn closes the application
                     frame.dispose();
+                    System.exit(0);
                 }
                 if (ke.getKeyCode() == KeyEvent.VK_R)
                 { //Pressing 'r' will remove and replace the pieces.
@@ -236,7 +239,7 @@ public class Board
                     {
                         pieces.remove();
                     }
-                    addPieces();
+                    pHandler.addPieces(pieces);
                     turnCount = 1;
                     consoleDisplay();
                     frame.repaint();
@@ -244,7 +247,7 @@ public class Board
 
                 if (ke.getKeyCode() == KeyEvent.VK_S)
                 { //Pressing 's' will save to file
-                    if (whiteTurn(turnCount))
+                    if (pHandler.whiteTurn(turnCount))
                     {
                         String passString = getLayoutString();
                         try
@@ -281,7 +284,7 @@ public class Board
                     {
                         e.printStackTrace();
                         JOptionPane.showMessageDialog(null, "Save file corrupted!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
-                        addPieces();
+                        pHandler.addPieces(pieces);
                         turnCount = 1;
                         consoleDisplay();
                         frame.repaint();
@@ -339,7 +342,7 @@ public class Board
             {
                 try
                 {
-                    selectedPiece = getPiece(e.getX(), e.getY());
+                    selectedPiece = pHandler.getPiece(pieces, e.getX(), e.getY());
                 } catch (Exception er)
                 {
                     er.printStackTrace();
@@ -354,20 +357,21 @@ public class Board
                 {
                     int newX = e.getX() / 64;
                     int newY = e.getY() / 64;
-                    if (whiteTurn(turnCount) == selectedPiece.isWhite) //Check if the colored piece selected has their turn
+                    if (pHandler.whiteTurn(turnCount) == selectedPiece.isWhite) //Check if the colored piece selected has their turn
                     {
                         if (selectedPiece.move(newX, newY))
                         {
                             afterValidation(newX, newY, frame);
                         } else
                         {
-                            returnPlace(selectedPiece);
+                            pHandler.returnPlace(selectedPiece);
                         }
 
                     } else
                     {
                         System.out.println("Not your turn");
-                        returnPlace(selectedPiece);
+
+                        pHandler.returnPlace(selectedPiece);
                     }
                     consoleDisplay();
                     frame.repaint();
@@ -391,124 +395,22 @@ public class Board
 
         //We need to see the frame
         frame.setVisible(true);
-
-    }
-
-    /**
-     * * =============================
-     * *   Piece Handling
-     * * =============================
-     ****/
-    public static void addPieces()
-    {
-        //While it says they aren't used they are. I have no idea why.
-        /** !!!!!DONT REMOVE THIS PART!!!!!*/
-        King wKing = new King(4, 0, false, "king", pieces);
-        King bKing = new King(4, 7, true, "king", pieces);
-        Queen wQueen = new Queen(3, 0, false, "queen", pieces);
-        Queen bQueen = new Queen(3, 7, true, "queen", pieces);
-
-        Rook wRook1 = new Rook(0, 0, false, "rook", pieces);
-        Rook wRook2 = new Rook(7, 0, false, "rook", pieces);
-
-        Rook bRook1 = new Rook(0, 7, true, "rook", pieces);
-        Rook bRook2 = new Rook(7, 7, true, "rook", pieces);
-
-        Bishop wBishop1 = new Bishop(2, 0, false, "bishop", pieces);
-        Bishop wBishop2 = new Bishop(5, 0, false, "bishop", pieces);
-
-        Bishop bBishop1 = new Bishop(2, 7, true, "bishop", pieces);
-        Bishop bBishop2 = new Bishop(5, 7, true, "bishop", pieces);
-
-        Knight wKnight1 = new Knight(1, 0, false, "knight", pieces);
-        Knight wKnight2 = new Knight(6, 0, false, "knight", pieces);
-
-        Knight bKnight1 = new Knight(1, 7, true, "knight", pieces);
-        Knight bKnight2 = new Knight(6, 7, true, "knight", pieces);
-
-        for (int i = 0; i < 8; i++)
-        {
-            Pawn wPawn = new Pawn(i, 1, false, "pawn", pieces);
-            Pawn bPawn = new Pawn(i, 6, true, "pawn", pieces);
-        }
-
-
-    }
-
-    //We use this to check if the selected color has the current turn
-    public static boolean whiteTurn(byte turnCount)
-    {
-        return !(turnCount % 2 == 0);
-    }
-
-
-    //Here we make sure we can grab the piece
-    public static Pieces getPiece(int x, int y)
-    {
-        int xp = x / 64;
-        int yp = y / 64;
-        for (Pieces p : pieces)
-        {
-            if (p.xLocation == xp && p.yLocation == yp)
-            {
-                return p;
-            }
-        }
-        return null;
-    }
-
-    //Here we actually place the piece at its new location
-    public static void placeNew(Pieces p, int x, int y)
-    {
-        p.xLocation = x;
-        p.yLocation = y;
-        p.xDrawLoc = x * 64;
-        p.yDrawLoc = y * 64;
-    }
-
-    //In case something went wrong this is used to return the piece to where it was selected.
-    public static void returnPlace(Pieces p)
-    {
-        p.xDrawLoc = p.xLocation * 64;
-        p.yDrawLoc = p.yLocation * 64;
-    }
-
-    //In here we actually do the piece removing
-    public static void killPiece(int x, int y, Frame frame)
-    {
-        if (Board.getPiece(x * 64, y * 64) != null)
-        {
-            if (Board.getPiece(x * 64, y * 64).getPieceType().equals("king")) //We need to check if they win
-            {
-                if (selectedPiece.isWhite)
-                {
-                    JOptionPane.showMessageDialog(null, "WHITE HAS WON!", "GAME ENDED", JOptionPane.INFORMATION_MESSAGE);
-                } else
-                {
-                    JOptionPane.showMessageDialog(null, "BLACK HAS WON!", "GAME ENDED", JOptionPane.INFORMATION_MESSAGE);
-                }
-                frame.dispose();
-            }
-            Board.getPiece(x * 64, y * 64).KillPiece();
-            pieces.remove(Board.getPiece(x * 64, y * 64));
-        }
-
     }
 
     //If the move is valid check for other pieces
     public static void afterValidation(int newX, int newY, Frame frame)
     {
-        if (Board.getPiece(newX * 64, newY * 64) != null)
+        if (pHandler.getPiece(pieces, newX * 64, newY * 64) != null)
         {
-            if (Board.getPiece(newX * 64, newY * 64).isWhite == selectedPiece.isWhite)
+            if (pHandler.getPiece(pieces, newX * 64, newY * 64).isWhite == selectedPiece.isWhite)
             {
-                returnPlace(selectedPiece);
+                pHandler.returnPlace(selectedPiece);
             } else
             {
-                if (Board.getPiece(newX * 64, newY * 64).isWhite != selectedPiece.isWhite)
+                if (pHandler.getPiece(pieces, newX * 64, newY * 64).isWhite != selectedPiece.isWhite)
                 {
-                    killPiece(newX, newY, frame);
-                    placeNew(selectedPiece, newX, newY);
+                    pHandler.killPiece(newX, newY, frame, pieces, selectedPiece);
+                    pHandler.placeNew(selectedPiece, newX, newY);
                 }
                 turnCount++;
             }
@@ -516,7 +418,7 @@ public class Board
         } else
         {
             turnCount++;
-            placeNew(selectedPiece, newX, newY);
+            pHandler.placeNew(selectedPiece, newX, newY);
         }
     }
 
@@ -561,17 +463,17 @@ public class Board
                 {
                     System.out.print("| ");
                 }
-                if (getPiece(j * 64, i * 64) == null)
+                if (pHandler.getPiece(pieces, j * 64, i * 64) == null)
                 {
                     System.out.print(" ");
                 } else
                 {
-                    if (getPiece(j * 64, i * 64).pieceType.equals("knight"))
+                    if (pHandler.getPiece(pieces, j * 64, i * 64).pieceType.equals("knight"))
                     {
                         System.out.print("H");
                     } else
                     {
-                        System.out.print(String.valueOf(getPiece(j * 64, i * 64).pieceType.charAt(0)).toUpperCase(Locale.ROOT));
+                        System.out.print(String.valueOf(pHandler.getPiece(pieces, j * 64, i * 64).pieceType.charAt(0)).toUpperCase(Locale.ROOT));
                     }
                 }
                 System.out.print(" | ");
@@ -598,7 +500,7 @@ public class Board
             {
                 try
                 {
-                    selectedPiece = getPiece(x * 64, y * 64);
+                    selectedPiece = pHandler.getPiece(pieces, x * 64, y * 64);
                     if (selectedPiece.getPieceType().equals("knight"))
                     {
                         tempChar = 'h';
@@ -627,7 +529,7 @@ public class Board
     public static void orderBoard(String loadString)
     {
         int yPlace = 0;
-        if (loadString.length() % 8 != 0)
+        if (loadString.length() / 64 == 1)
         {
             System.out.println("Corrupted save file!");
         } else

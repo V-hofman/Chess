@@ -1,6 +1,6 @@
 package nl.bd.vincent.pieces;
 
-import nl.bd.vincent.Board;
+import nl.bd.vincent.PawnHandler;
 import nl.bd.vincent.Pieces;
 
 import java.util.LinkedList;
@@ -13,7 +13,8 @@ public class Pawn extends Pieces
     int xDrawLoc, yDrawLoc;
     boolean isWhite;
     LinkedList<Pieces> pieces;
-    String pieceType = "Pawn";
+    String pieceType;
+    PawnHandler pHandler = new PawnHandler();
 
     public Pawn(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces)
     {
@@ -30,9 +31,9 @@ public class Pawn extends Pieces
 
     public boolean move(int x, int y)
     {
-        if (Board.getPiece(x * 64, y * 64) != null)
+        if (pHandler.getPiece(pieces,x * 64, y * 64) != null)
         {
-            if (pawnStrike(x, y, Board.getPiece(x * 64, y * 64)))
+            if (pawnStrike(x, y, pHandler.getPiece(pieces,x * 64, y * 64)))
             {
                 this.xLocation = x;
                 this.yLocation = y;

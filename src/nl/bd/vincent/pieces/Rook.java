@@ -12,7 +12,7 @@ public class Rook extends Pieces
     int xDrawLoc, yDrawLoc;
     boolean isWhite;
     LinkedList<Pieces> pieces;
-    String pieceType = "Rook";
+    String pieceType;
 
     public Rook(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces)
     {

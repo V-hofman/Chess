@@ -27,9 +27,9 @@ public class FileHandler
         writer.close();
     }
 
-    public String loadFile() throws IOException, ClassNotFoundException
+    public String loadFile()
     {
-        String content = "";
+        String content;
         byte[] bytes = null;
 
         try

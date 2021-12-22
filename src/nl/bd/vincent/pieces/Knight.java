@@ -11,7 +11,7 @@ public class Knight extends Pieces {
     int xDrawLoc, yDrawLoc;
     boolean isWhite;
     LinkedList<Pieces> pieces;
-    String pieceType = "Knight";
+    String pieceType;
 
     public Knight(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces){
         super(xLocation, yLocation, isWhite, pieceType, pieces);

@@ -11,7 +11,7 @@ public class Bishop extends Pieces {
     int xDrawLoc, yDrawLoc;
     boolean isWhite;
     LinkedList<Pieces> pieces;
-    String pieceType = "Bishop";
+    String pieceType;
 
     public Bishop(int xLocation, int yLocation, boolean isWhite, String pieceType, LinkedList<Pieces> pieces){
         super(xLocation, yLocation, isWhite, pieceType, pieces);
