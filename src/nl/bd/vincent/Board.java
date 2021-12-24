@@ -529,7 +529,7 @@ public class Board
     public static void orderBoard(String loadString)
     {
         int yPlace = 0;
-        if (loadString.length() / 64 == 1)
+        if (loadString.length() % 8 != 0)
         {
             System.out.println("Corrupted save file!");
         } else
